@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Cloudsync
   class SyncManager
     attr_accessor :from_backend, :to_backend, :dry_run
