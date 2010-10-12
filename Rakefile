@@ -5,10 +5,10 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "cloudsync"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Sync files between various clouds or sftp servers.}
+    gem.description = %Q{Sync files between various clouds or sftp servers. Available backends are S3, CloudFiles, and SFTP servers. Can sync, mirror, and prune.}
     gem.email = "cory.forsyth@gmail.com"
-    gem.homepage = "http://github.com/bantic/cloudsync"
+    gem.homepage = "http://github.com/megaphone/cloudsync"
     gem.authors = ["Cory Forsyth"]
     gem.add_dependency "right_aws", ">= 0"
     gem.add_dependency "cloudfiles", ">= 0"

@@ -4,7 +4,7 @@ require 'rubygems'
 require "commander/import"
 require "lib/cloudsync"
 
-program :version, Cloudsync::VERSION
+program :version, File.read( File.expand_path(File.dirname(__FILE__) + "/../VERSION") )
 program :description, "Sync between various backends (S3, Cloudfiles, SFTP)"
 
 def add_sync_options(c)

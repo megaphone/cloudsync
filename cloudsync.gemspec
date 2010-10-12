@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cloudsync}
-  s.version = "0.0.0"
+  s.version = "0.1.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Cory Forsyth"]
   s.date = %q{2010-10-12}
   s.default_executable = %q{cloudsync}
-  s.description = %q{TODO: longer description of your gem}
+  s.description = %q{Sync files between various clouds or sftp servers. Available backends are S3, CloudFiles, and SFTP servers. Can sync, mirror, and prune.}
   s.email = %q{cory.forsyth@gmail.com}
   s.executables = ["cloudsync"]
   s.extra_rdoc_files = [
@@ -25,6 +25,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "bin/cloudsync",
+     "cloudsync.gemspec",
      "lib/cloudsync.rb",
      "lib/cloudsync/backend/base.rb",
      "lib/cloudsync/backend/cloudfiles.rb",
@@ -37,11 +38,11 @@ Gem::Specification.new do |s|
      "test/helper.rb",
      "test/test_cloudsync.rb"
   ]
-  s.homepage = %q{http://github.com/bantic/cloudsync}
+  s.homepage = %q{http://github.com/megaphone/cloudsync}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{TODO: one-line summary of your gem}
+  s.summary = %q{Sync files between various clouds or sftp servers.}
   s.test_files = [
     "test/helper.rb",
      "test/test_cloudsync.rb"

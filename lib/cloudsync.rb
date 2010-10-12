@@ -1,7 +1,6 @@
 $:.unshift(File.dirname(__FILE__))
 
 require "cloudsync/sync_manager"
-require "cloudsync/version"
 require "cloudsync/file"
 require "cloudsync/backend/base"
 require "cloudsync/backend/cloudfiles"
