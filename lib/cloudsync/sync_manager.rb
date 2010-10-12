@@ -108,7 +108,7 @@ module Cloudsync
       $LOGGER.info("Sync from #{from_backend} to #{to_backend} started at #{sync_start = Time.now}. Mode: #{mode}. Dry-run? #{!!dry_run?}")
 
       from_backend_files   = from_backend.files_to_sync(to_backend.upload_prefix)
-      to_backend_files     = to_backend.files_to_sync(from_backend.upload_prefix)
+      to_backend_files     = [] # to_backend.files_to_sync(from_backend.upload_prefix)
       total_files          = from_backend_files.size
       last_decile_complete = 0
       
