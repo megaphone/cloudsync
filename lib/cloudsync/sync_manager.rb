@@ -19,10 +19,10 @@ module Cloudsync
     end
     
     def mirror!
-      $LOGGER.info("Mirror started at #{mirror_start = Time.now}. Dry-run? #{!!dry_run?}")
+      $LOGGER.info("Mirror from #{from_backend} to #{to_backend} started at #{mirror_start = Time.now}. Dry-run? #{!!dry_run?}")
       sync!
       prune!
-      $LOGGER.info("Mirror finished at #{Time.now}. Took #{Time.now - mirror_start}s")
+      $LOGGER.info("Mirror from #{from_backend} to #{to_backend} finished at #{Time.now}. Took #{Time.now - mirror_start}s")
     end
     
     def dry_run?
@@ -63,8 +63,7 @@ module Cloudsync
     def prune
       file_stats = {:removed => [], :skipped => []}
       
-      $LOGGER.info("Prune started at #{prune_start = Time.now}. Dry-run? #{!!dry_run?}")
-      $LOGGER.info("Pruning files on #{to_backend} to match files on #{from_backend}")
+      $LOGGER.info("Prune from #{from_backend} to #{to_backend} started at #{prune_start = Time.now}. Dry-run? #{!!dry_run?}")
       
       from_backend_files   = [] # from_backend.files_to_sync(to_backend.upload_prefix)
       to_backend_files     = to_backend.files_to_sync(from_backend.upload_prefix)
@@ -89,7 +88,7 @@ module Cloudsync
         end
       end
       
-      $LOGGER.info(["Prune finished at #{Time.now}, took #{Time.now - prune_start}s.",
+      $LOGGER.info(["Prune from #{from_backend} to #{to_backend} finished at #{Time.now}, took #{Time.now - prune_start}s.",
                    "Skipped #{file_stats[:skipped].size} files.",
                    "Removed #{file_stats[:removed].size} files"].join(" "))
       file_stats
@@ -97,8 +96,7 @@ module Cloudsync
     
     def sync(mode)
       file_stats = {:copied => [], :skipped => []}
-      $LOGGER.info("Sync started at #{sync_start = Time.now}. Mode: #{mode}. Dry-run? #{!!dry_run?}")
-      $LOGGER.info("Syncing from #{from_backend} to #{to_backend}")
+      $LOGGER.info("Sync from #{from_backend} to #{to_backend} started at #{sync_start = Time.now}. Mode: #{mode}. Dry-run? #{!!dry_run?}")
 
       from_backend_files   = from_backend.files_to_sync(to_backend.upload_prefix)
       to_backend_files     = to_backend.files_to_sync(from_backend.upload_prefix)
@@ -116,11 +114,11 @@ module Cloudsync
         
         if decile_complete(index, total_files) != last_decile_complete
           last_decile_complete = decile_complete(index, total_files)
-          $LOGGER.info("Sync: Completed #{index} files. #{last_decile_complete * 10}% complete")
+          $LOGGER.info("Sync from #{from_backend} to #{to_backend}: Completed #{index} files. #{last_decile_complete * 10}% complete")
         end
       end
       
-      $LOGGER.debug(["Sync finished at #{Time.now}, took #{Time.now - sync_start}s.",
+      $LOGGER.debug(["Sync from #{from_backend} to #{to_backend} finished at #{Time.now}, took #{Time.now - sync_start}s.",
                      "Copied #{file_stats[:copied].size} files.",
                      "Skipped #{file_stats[:skipped].size} files."].join(" "))
       file_stats
