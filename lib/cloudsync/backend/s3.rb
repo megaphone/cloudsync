@@ -73,7 +73,7 @@ module Cloudsync
       
         buckets_to_sync(upload_prefix).inject([]) do |files, bucket|
           objects_from_bucket(bucket, upload_prefix).collect do |key|
-            files << Cloudsync::File.from_s3_obj(key)
+            files << Cloudsync::File.from_s3_obj(key, self.to_s)
           end
           files
         end
@@ -99,7 +99,7 @@ module Cloudsync
     
       # Convenience to grab a single file
       def get_file_from_store(file)
-        Cloudsync::File.from_s3_obj( get_obj_from_store(file) )
+        Cloudsync::File.from_s3_obj( get_obj_from_store(file), self.to_s )
       end
     
       def get_or_create_obj_from_store(file)

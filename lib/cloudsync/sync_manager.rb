@@ -5,9 +5,16 @@ module Cloudsync
     def initialize(opts={})
       @from_backend     = get_backend opts[:from]
       @to_backend       = get_backend opts[:to]
+      
+      if @from_backend == @to_backend
+        raise ArgumentError, "The from_backend can't be the same as the to_backend."
+      end
+      
       @dry_run          = opts[:dry_run]
 
-      $LOGGER           Logger.new(opts[:log_file] || "cloudsync.log")
+      log_file = opts[:log_file] || "cloudsync.log"
+      log_file = ::File.expand_path(log_file)
+      $LOGGER  = Logger.new(log_file)
     end
   
     def sync!

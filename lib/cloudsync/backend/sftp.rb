@@ -86,7 +86,7 @@ module Cloudsync::Backend
               :last_modified => attrs.mtime,
               :prefix        => @prefix,
               :e_tag         => e_tag,
-              :store         => Cloudsync::Backend::Sftp
+              :backend       => self.to_s
           end.compact
         end
       end

@@ -7,12 +7,22 @@ require "lib/cloudsync"
 program :version, Cloudsync::VERSION
 program :description, "Sync between various backends (S3, Cloudfiles, SFTP)"
 
+def add_sync_options(c)
+  c.option "--from from_backend", String, "From Backend"
+  c.option "--to to_backend", String, "To Backend"
+  c.option "--dry-run", "Dry run?"
+  c.option "--log LOGFILE", String, "Log file"
+  c.option "-a", "Auto mode -- skip command-line confirmations"
+end
+
+def confirm_proceed(msg)
+  exit unless agree(msg)
+end
+
 command :sync do |c|
   c.syntax = "cloudsync sync --from from_backend --to to_backend [--dry-run]"
   c.description = "Copies all files on from_backend to to_backend."
-  c.option "--from from_backend", String, "From Backend"
-  c.option "--to to_backend", String, "To Backend"
-  c.option "--dry_run", "Dry run?"
+  add_sync_options(c)
   c.action do |args, options|
     options.default :dry_run => false
     
@@ -20,9 +30,63 @@ command :sync do |c|
     to_backend   = options.to.to_sym
     
     sync_manager = Cloudsync::SyncManager.new \
-                      :from    => from_backend,
-                      :to      => to_backend,
-                      :dry_run => options.dry_run
+                      :from      => from_backend,
+                      :to        => to_backend,
+                      :dry_run => options.dry_run,
+                      :log_file  => options.log
+    
+    unless options.a
+      confirm_proceed("Preparing to sync from #{sync_manager.from_backend} to #{sync_manager.to_backend}. Dry-run: #{!!sync_manager.dry_run?}. Ok to proceed?")
+    end
+    
     sync_manager.sync!
+  end
+end
+
+command :mirror do |c|
+  c.syntax = "cloudsync mirror --from from_backend --to to_backend [--dry-run]"
+  c.description = "Syncs and then prunes all files on from_backend to to_backend."
+  add_sync_options(c)
+  c.action do |args, options|
+    options.default :dry_run => false
+    
+    from_backend = options.from.to_sym
+    to_backend   = options.to.to_sym
+    
+    sync_manager = Cloudsync::SyncManager.new \
+                      :from      => from_backend,
+                      :to        => to_backend,
+                      :dry_run => options.dry_run,
+                      :log_file  => options.log
+
+    unless options.a
+      confirm_proceed("Preparing to mirror from #{sync_manager.from_backend} to #{sync_manager.to_backend}. Dry-run: #{!!sync_manager.dry_run?}. Ok to proceed?")
+    end
+
+    sync_manager.mirror!
+  end
+end
+
+command :prune do |c|
+  c.syntax = "cloudsync prune --from from_backend --to to_backend [--dry-run]"
+  c.description = "Removes all on to_backend that don't exist on from_backend."
+  add_sync_options(c)
+  c.action do |args, options|
+    options.default :dry_run => false
+    
+    from_backend = options.from.to_sym
+    to_backend   = options.to.to_sym
+    
+    sync_manager = Cloudsync::SyncManager.new \
+                      :from      => from_backend,
+                      :to        => to_backend,
+                      :dry_run => options.dry_run,
+                      :log_file  => options.log
+
+    unless options.a
+      confirm_proceed("Preparing to prune from #{sync_manager.from_backend} to #{sync_manager.to_backend}. Dry-run: #{!!sync_manager.dry_run?}. Ok to proceed?")
+    end
+
+    sync_manager.prune!
   end
 end

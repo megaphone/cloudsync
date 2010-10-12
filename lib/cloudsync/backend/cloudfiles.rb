@@ -48,7 +48,7 @@ module Cloudsync
         containers_to_sync(upload_prefix).inject([]) do |files, container|
           container = get_or_create_container(container)
           objects_from_container(container, upload_prefix).each do |path, hash|
-            files << Cloudsync::File.from_cf_info(container, path, hash)
+            files << Cloudsync::File.from_cf_info(container, path, hash, self.to_s)
           end
           files
         end
@@ -111,7 +111,7 @@ module Cloudsync
       end
     
       def get_file_from_store(file)
-        Cloudsync::File.from_cf_obj( get_obj_from_store(file) )
+        Cloudsync::File.from_cf_obj( get_obj_from_store(file), self.to_s )
       end
     
       def get_or_create_obj_from_store(file)

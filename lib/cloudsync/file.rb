@@ -1,6 +1,6 @@
 module Cloudsync
   class File
-    attr_accessor :bucket, :path, :size, :last_modified, :e_tag, :store
+    attr_accessor :bucket, :path, :size, :last_modified, :e_tag, :backend
     alias_method :container, :bucket
     alias_method :container=, :bucket=
     
@@ -10,11 +10,11 @@ module Cloudsync
       @size          = options[:size]
       @last_modified = options[:last_modified]
       @e_tag         = options[:e_tag]
-      @store         = options[:store]
+      @backend       = options[:backend]
       @prefix        = options[:prefix]
     end
     
-    def self.from_s3_obj(obj)
+    def self.from_s3_obj(obj, backend=nil)
       return nil if obj.nil?
       new({
         :bucket        => obj.bucket.name,
@@ -22,19 +22,19 @@ module Cloudsync
         :size          => obj.size,
         :last_modified => obj.last_modified.to_i,
         :e_tag         => obj.e_tag.gsub('"',''),
-        :store         => Backend::S3})
+        :backend       => backend})
     end
     
-    def self.from_cf_info(container, path, hash)
+    def self.from_cf_info(container, path, hash, backend)
       new({ :bucket        => container.name,
             :path          => path,
             :size          => hash[:bytes],
             :last_modified => hash[:last_modified].to_gm_time.to_i,
             :e_tag         => hash[:hash],
-            :store         => Backend::CloudFiles })
+            :backend       => backend })
     end
     
-    def self.from_cf_obj(obj)
+    def self.from_cf_obj(obj, backend=nil)
       return nil if obj.nil?
       new({
         :bucket        => obj.container.name,
@@ -42,7 +42,7 @@ module Cloudsync
         :size          => obj.bytes.to_i,
         :last_modified => obj.last_modified.to_i,
         :e_tag         => obj.etag,
-        :store         => Backend::CloudFiles})
+        :backend       => backend})
     end
     
     def to_s

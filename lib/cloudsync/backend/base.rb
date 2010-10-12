@@ -8,10 +8,17 @@ module Cloudsync
       def initialize(opts = {})
         @sync_manager     = opts[:sync_manager]
         @name             = opts[:name]
+        @backend_type     = opts[:backend] || self.class.to_s.split("::").last
       end
       
       def upload_prefix
         {:bucket => @bucket, :prefix => @prefix}
+      end
+      
+      def upload_prefix_path
+        if @bucket && @prefix
+          "#{@bucket}/#{@prefix}"
+        end
       end
 
       # copy
@@ -30,16 +37,12 @@ module Cloudsync
       end
     
       def to_s
-        @name.to_s
+        "#{@name}[:#{@backend_type}/#{upload_prefix_path}]"
       end
-    
+      
       # needs_update?
       def needs_update?(file, file_list=[])
         $LOGGER.debug("Checking if #{file} needs update")
-      
-        if file.store == self
-          raise "Can't compare file against itself (file is from #{file.store}, self is #{self})" 
-        end
       
         local_backend_file = find_file_from_list_or_store(file, file_list)
 
@@ -53,7 +56,7 @@ module Cloudsync
           return false
         else
           $LOGGER.debug(["Etags don't match for #{file}.",
-                        "#{file.store}: #{file.e_tag}",
+                        "#{file.backend}: #{file.e_tag}",
                         "#{self}: #{local_backend_file.e_tag}"].join(" "))
           return true
         end
