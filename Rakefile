@@ -13,8 +13,8 @@ begin
     gem.add_dependency "right_aws", "~> 2.0.0"
     gem.add_dependency "cloudfiles", "~> 1.4.8"
     gem.add_dependency "commander", "~> 4.0.3"
-    gem.add_dependency "net/ssh", "~> 2.0.19"
-    gem.add_dependency "net/sftp", "~> 2.0.4"
+    gem.add_dependency "net-ssh", "~> 2.0.19"
+    gem.add_dependency "net-sftp", "~> 2.0.4"
     
     
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
