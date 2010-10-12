@@ -2,7 +2,7 @@
 
 require 'rubygems'
 require "commander/import"
-require "lib/cloudsync"
+require File.join(File.dirname(__FILE__), "..", "lib", "cloudsync")
 
 program :version, File.read( File.expand_path(File.dirname(__FILE__) + "/../VERSION") )
 program :description, "Sync between various backends (S3, Cloudfiles, SFTP)"
