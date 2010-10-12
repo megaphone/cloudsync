@@ -11,7 +11,6 @@ module Cloudsync
       @last_modified = options[:last_modified]
       @e_tag         = options[:e_tag]
       @backend       = options[:backend]
-      @prefix        = options[:prefix]
     end
     
     def self.from_s3_obj(obj, backend=nil)

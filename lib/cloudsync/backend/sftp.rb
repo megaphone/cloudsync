@@ -84,7 +84,6 @@ module Cloudsync::Backend
               :path          => filepath,
               :size          => attrs.size,
               :last_modified => attrs.mtime,
-              :prefix        => @prefix,
               :e_tag         => e_tag,
               :backend       => self.to_s
           end.compact
@@ -123,9 +122,8 @@ module Cloudsync::Backend
             :path          => local_filepath,
             :size          => attrs.size,
             :last_modified => attrs.mtime,
-            :prefix        => @prefix,
             :e_tag         => e_tag,
-            :store         => Cloudsync::Backend::Sftp
+            :backend       => self.to_s
         end
       end
       sftp_file
