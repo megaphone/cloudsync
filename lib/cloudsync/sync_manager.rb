@@ -74,14 +74,13 @@ module Cloudsync
       
       $LOGGER.info("Prune from #{from_backend} to #{to_backend} started at #{prune_start = Time.now}. Dry-run? #{!!dry_run?}")
       
-      from_backend_files   = [] # from_backend.files_to_sync(to_backend.upload_prefix)
       to_backend_files     = to_backend.files_to_sync(from_backend.upload_prefix)
       total_files          = to_backend_files.size
       last_decile_complete = 0
       
       to_backend_files.each_with_index do |file, index|
         $LOGGER.debug("Checking if file #{file} exists on [#{from_backend}]")
-        if found_file = from_backend.find_file_from_list_or_store(file, from_backend_files)
+        if found_file = from_backend.find_file_from_list_or_store(file)
           $LOGGER.debug("Keeping file #{file} because it was found on #{from_backend}.")
           file_stats[:skipped] << file
         else
@@ -108,12 +107,11 @@ module Cloudsync
       $LOGGER.info("Sync from #{from_backend} to #{to_backend} started at #{sync_start = Time.now}. Mode: #{mode}. Dry-run? #{!!dry_run?}")
 
       from_backend_files   = from_backend.files_to_sync(to_backend.upload_prefix)
-      to_backend_files     = [] # to_backend.files_to_sync(from_backend.upload_prefix)
       total_files          = from_backend_files.size
       last_decile_complete = 0
       
       from_backend_files.each_with_index do |file, index|
-        if (mode == :sync_all || to_backend.needs_update?(file, to_backend_files))
+        if (mode == :sync_all || to_backend.needs_update?(file))
           file_stats[:copied] << file
           from_backend.copy(file, to_backend)
         else

@@ -26,12 +26,12 @@ module Cloudsync
     
       def download(file)
         start_time = Time.now
-        $LOGGER.info("Downloading file #{file}")
+        $LOGGER.info("Downloading file #{file} (#{file.path})")
       
         tempfile = file.tempfile
 
         if !dry_run?
-          @store.interface.get(file.bucket, file.path) do |chunk|
+          @store.interface.get(file.bucket, file.download_path) do |chunk|
             tempfile.write chunk
           end
         end
@@ -57,7 +57,7 @@ module Cloudsync
         get_obj_from_store(file).delete
       
         if bucket = @store.bucket(file.bucket)
-          bucket.key(file.path).delete
+          bucket.key(file.download_path).delete
         
           if delete_bucket_if_empty && bucket.keys.empty?
             $LOGGER.debug("Deleting empty bucket '#{bucket.name}'")
@@ -68,9 +68,9 @@ module Cloudsync
         $LOGGER.error("Caught error: #{e} trying to delete #{file}")
       end
     
-      def files_to_sync(upload_prefix={})
+      def files_to_sync(upload_prefix="")
         $LOGGER.info("Getting files to sync [#{self}]")
-      
+        
         buckets_to_sync(upload_prefix).inject([]) do |files, bucket|
           objects_from_bucket(bucket, upload_prefix).collect do |key|
             files << Cloudsync::File.from_s3_obj(key, self.to_s)
@@ -81,18 +81,23 @@ module Cloudsync
 
       private
     
-      def buckets_to_sync(upload_prefix)
-        if upload_prefix[:bucket]
-          [@store.bucket(upload_prefix[:bucket], true)]
+      def buckets_to_sync(upload_prefix="")
+        bucket_name = upload_prefix.split("/").first
+        if bucket_name
+          [@store.bucket(bucket_name, true)]
         else
           @store.buckets
         end
       end
       
-      def objects_from_bucket(bucket, upload_prefix)
-        if upload_prefix[:prefix]
-          bucket.keys(:prefix => upload_prefix[:prefix])
-        else 
+      def objects_from_bucket(bucket, upload_prefix="")
+        prefix_parts = upload_prefix.split("/")
+        prefix_parts.shift
+        prefix = prefix_parts.join("/")
+        
+        if !prefix.empty?
+          bucket.keys(:prefix => prefix)
+        else
           bucket.keys
         end
       end
@@ -107,6 +112,7 @@ module Cloudsync
       end
     
       def get_obj_from_store(file)
+        $LOGGER.debug("gofs, buck: #{file.bucket}. upload path: #{file.upload_path}")
         if bucket = @store.bucket(file.bucket)
           key = bucket.key(file.upload_path)
           return key if key.exists?

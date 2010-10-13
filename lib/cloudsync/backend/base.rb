@@ -3,24 +3,16 @@ require 'tempfile'
 module Cloudsync
   module Backend
     class Base
-      attr_accessor :store, :sync_manager, :name, :prefix
+      attr_accessor :store, :sync_manager, :name, :upload_prefix
       
       def initialize(opts = {})
         @sync_manager     = opts[:sync_manager]
         @name             = opts[:name]
         @backend_type     = opts[:backend] || self.class.to_s.split("::").last
+        @download_prefix  = opts[:download_prefix] || ""
+        @upload_prefix    = opts[:upload_prefix] || ""
       end
       
-      def upload_prefix
-        {:bucket => @bucket, :prefix => @prefix}
-      end
-      
-      def upload_prefix_path
-        if @bucket && @prefix
-          "#{@bucket}/#{@prefix}"
-        end
-      end
-
       # copy
       def copy(file, to_backend)
         start_copy = Time.now
@@ -37,7 +29,7 @@ module Cloudsync
       end
     
       def to_s
-        "#{@name}[:#{@backend_type}/#{upload_prefix_path}]"
+        "#{@name}[:#{@backend_type}/#{@upload_prefix}]"
       end
       
       # needs_update?
@@ -92,7 +84,7 @@ module Cloudsync
       end
     
       private
-    
+      
       def dry_run?
         return false unless @sync_manager
         @sync_manager.dry_run?
