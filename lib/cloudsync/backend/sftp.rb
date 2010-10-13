@@ -1,5 +1,6 @@
 require 'net/ssh'
 require 'net/sftp'
+require 'escape'
 
 module Cloudsync::Backend
   class Sftp < Base
@@ -78,7 +79,7 @@ module Cloudsync::Backend
             attrs = sftp.stat!(absolute_path(filepath))
             next unless attrs.file?
 
-            e_tag = ssh.exec!("md5sum #{absolute_path(filepath)}").split(" ").first
+            e_tag = ssh.exec!(md5sum_cmd(filepath)).split(" ").first
             Cloudsync::File.new \
               :bucket        => @bucket,
               :path          => filepath,
@@ -98,6 +99,10 @@ module Cloudsync::Backend
     
     private
     
+    def md5sum_cmd(filepath)
+      Escape.shell_command(["md5sum","#{absolute_path(filepath)}"])
+    end
+    
     # get_file_from_store
     def get_file_from_store(file)
       local_filepath = file.path.sub(/^#{@prefix}\/?/,"")
@@ -116,7 +121,7 @@ module Cloudsync::Backend
           end
           break unless attrs.file?
           
-          e_tag = ssh.exec!("md5sum #{absolute_path(local_filepath)}").split(" ").first
+          e_tag = ssh.exec!(md5sum_cmd(filepath)).split(" ").first
           sftp_file = Cloudsync::File.new \
             :bucket        => @bucket,
             :path          => local_filepath,

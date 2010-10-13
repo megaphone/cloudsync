@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cloudsync}
-  s.version = "0.1.0"
+  s.version = "1.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Cory Forsyth"]
-  s.date = %q{2010-10-12}
+  s.date = %q{2010-10-13}
   s.default_executable = %q{cloudsync}
   s.description = %q{Sync files between various clouds or sftp servers. Available backends are S3, CloudFiles, and SFTP servers. Can sync, mirror, and prune.}
   s.email = %q{cory.forsyth@gmail.com}
@@ -34,7 +34,6 @@ Gem::Specification.new do |s|
      "lib/cloudsync/datetime/datetime.rb",
      "lib/cloudsync/file.rb",
      "lib/cloudsync/sync_manager.rb",
-     "lib/cloudsync/version.rb",
      "test/helper.rb",
      "test/test_cloudsync.rb"
   ]
@@ -53,18 +52,27 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<right_aws>, [">= 0"])
-      s.add_runtime_dependency(%q<cloudfiles>, [">= 0"])
-      s.add_runtime_dependency(%q<commander>, [">= 0"])
+      s.add_runtime_dependency(%q<right_aws>, ["~> 2.0.0"])
+      s.add_runtime_dependency(%q<cloudfiles>, ["~> 1.4.8"])
+      s.add_runtime_dependency(%q<commander>, ["~> 4.0.3"])
+      s.add_runtime_dependency(%q<net-ssh>, ["~> 2.0.19"])
+      s.add_runtime_dependency(%q<net-sftp>, ["~> 2.0.4"])
+      s.add_runtime_dependency(%q<escape>, ["~> 0.0.4"])
     else
-      s.add_dependency(%q<right_aws>, [">= 0"])
-      s.add_dependency(%q<cloudfiles>, [">= 0"])
-      s.add_dependency(%q<commander>, [">= 0"])
+      s.add_dependency(%q<right_aws>, ["~> 2.0.0"])
+      s.add_dependency(%q<cloudfiles>, ["~> 1.4.8"])
+      s.add_dependency(%q<commander>, ["~> 4.0.3"])
+      s.add_dependency(%q<net-ssh>, ["~> 2.0.19"])
+      s.add_dependency(%q<net-sftp>, ["~> 2.0.4"])
+      s.add_dependency(%q<escape>, ["~> 0.0.4"])
     end
   else
-    s.add_dependency(%q<right_aws>, [">= 0"])
-    s.add_dependency(%q<cloudfiles>, [">= 0"])
-    s.add_dependency(%q<commander>, [">= 0"])
+    s.add_dependency(%q<right_aws>, ["~> 2.0.0"])
+    s.add_dependency(%q<cloudfiles>, ["~> 1.4.8"])
+    s.add_dependency(%q<commander>, ["~> 4.0.3"])
+    s.add_dependency(%q<net-ssh>, ["~> 2.0.19"])
+    s.add_dependency(%q<net-sftp>, ["~> 2.0.4"])
+    s.add_dependency(%q<escape>, ["~> 0.0.4"])
   end
 end
 
