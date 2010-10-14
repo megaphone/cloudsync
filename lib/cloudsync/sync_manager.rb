@@ -92,7 +92,7 @@ module Cloudsync
         
         if decile_complete(index, total_files) != last_decile_complete
           last_decile_complete = decile_complete(index, total_files)
-          $LOGGER.info("[SM]: Prune: Completed #{index} files. #{last_decile_complete * 10}% complete")
+          $LOGGER.info("[SM]: Prune: Completed #{index} files (skipped: #{file_stats[:skipped].size}, removed: #{file_stats[:removed].size}). #{last_decile_complete * 10}% complete")
         end
       end
       
@@ -121,7 +121,7 @@ module Cloudsync
         
         if decile_complete(index, total_files) != last_decile_complete
           last_decile_complete = decile_complete(index, total_files)
-          $LOGGER.info("[SM]: Sync from #{from_backend} to #{to_backend}: Completed #{index} files. #{last_decile_complete * 10}% complete")
+          $LOGGER.info("[SM]: Sync from #{from_backend} to #{to_backend}: Completed #{index} files (skipped: #{file_stats[:skipped].size}, copied: #{file_stats[:copied].size}). #{last_decile_complete * 10}% complete")
         end
       end
       
