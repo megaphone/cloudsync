@@ -48,6 +48,7 @@ module Cloudsync
         containers_to_sync(upload_prefix).inject([]) do |files, container|
           container = get_or_create_container(container)
           objects_from_container(container, upload_prefix).each do |path, hash|
+            next if hash[:content_type] == "application/directory"
             files << Cloudsync::File.from_cf_info(container, path, hash, self.to_s)
           end
           files
