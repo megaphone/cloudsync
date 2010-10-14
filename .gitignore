@@ -21,3 +21,4 @@ pkg
 ## PROJECT::SPECIFIC
 cloudsync.log
 cloudsync.yml
+.cloudsync.yml
