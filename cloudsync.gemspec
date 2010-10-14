@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{cloudsync}
-  s.version = "1.0.4"
+  s.version = "2.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Cory Forsyth"]
-  s.date = %q{2010-10-13}
+  s.date = %q{2010-10-14}
   s.default_executable = %q{cloudsync}
   s.description = %q{Sync files between various clouds or sftp servers. Available backends are S3, CloudFiles, and SFTP servers. Can sync, mirror, and prune.}
   s.email = %q{cory.forsyth@gmail.com}
