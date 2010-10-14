@@ -80,7 +80,7 @@ module Cloudsync
       
       to_backend_files.each_with_index do |file, index|
         $LOGGER.debug("Checking if file #{file} exists on [#{from_backend}]")
-        if found_file = from_backend.find_file_from_list_or_store(file)
+        if found_file = from_backend.get_file_from_store(file)
           $LOGGER.debug("Keeping file #{file} because it was found on #{from_backend}.")
           file_stats[:skipped] << file
         else

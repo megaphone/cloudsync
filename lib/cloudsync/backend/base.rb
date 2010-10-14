@@ -33,10 +33,10 @@ module Cloudsync
       end
       
       # needs_update?
-      def needs_update?(file, file_list=[])
+      def needs_update?(file)
         $LOGGER.debug("Checking if #{file} needs update")
       
-        local_backend_file = find_file_from_list_or_store(file, file_list)
+        local_backend_file = get_file_from_store(file)
 
         if local_backend_file.nil?
           $LOGGER.debug("File doesn't exist at #{self} (#{file})")
@@ -78,11 +78,6 @@ module Cloudsync
         all_files
       end
       
-      # find_file_from_list_or_store
-      def find_file_from_list_or_store(file, file_list=[])
-        get_file_from_list(file, file_list) || get_file_from_store(file)
-      end
-    
       private
       
       def dry_run?
@@ -93,11 +88,6 @@ module Cloudsync
       # get_file_from_store
       def get_file_from_store(file)
         raise NotImplementedError
-      end
-    
-      # get_file_from_list
-      def get_file_from_list(file, file_list)
-        file_list.detect {|f| f.full_name == file.full_name}
       end
     end
   end
