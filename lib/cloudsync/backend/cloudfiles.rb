@@ -42,18 +42,6 @@ module Cloudsync
         $LOGGER.debug("Finished putting #{file} to #{self} (#{Time.now - start_time}s)")
       end
     
-      def count_files_to_sync(upload_prefix)
-        $LOGGER.debug("Counting files to sync [#{self}]")
-
-        containers_to_sync(upload_prefix).inject(0) do |sum, container|
-          $LOGGER.debug("#{container} #{cstart = Time.now}")
-          container = get_or_create_container(container)
-          sum += objects_from_container(container, upload_prefix).size
-          $LOGGER.debug("#{container} #{Time.now - cstart}")
-          sum
-        end
-      end
-    
       def files_to_sync(upload_prefix={})
         $LOGGER.info("Getting files to sync [#{self}]")
 
@@ -112,6 +100,8 @@ module Cloudsync
       end
       
       def objects_from_container(container, upload_prefix)
+        $LOGGER.debug("Getting files from #{container.name}")
+        
         objects = []
         if upload_prefix[:prefix]
           container.objects_detail(:path => upload_prefix[:prefix]).collect do |path, hash|

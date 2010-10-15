@@ -63,22 +63,6 @@ module Cloudsync::Backend
       end
     end
     
-    def count_files_to_sync(upload_prefix="")
-      $LOGGER.debug("Counting files to sync [#{self}]")
-      count = 0
-      Net::SSH.start(@host, @username, :password => @password) do |ssh|
-        ssh.sftp.connect do |sftp|
-          filepaths = sftp.dir.glob(@download_prefix, "**/**").collect {|entry| entry.name}
-        
-          files = filepaths.collect do |filepath|
-            attrs = sftp.stat!(local_filepath_from_filepath(filepath))
-            count += 1 if attrs.file?
-          end
-        end
-      end
-      count
-    end
-    
     def files_to_sync(upload_prefix="")
       $LOGGER.info("Getting files to sync [#{self}]")
       files = []

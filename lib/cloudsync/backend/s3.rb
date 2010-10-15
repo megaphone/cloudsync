@@ -68,14 +68,6 @@ module Cloudsync
         $LOGGER.error("Caught error: #{e} trying to delete #{file}")
       end
       
-      def count_files_to_sync(upload_prefix="")
-        $LOGGER.debug("Counting files to sync [#{self}]")
-        
-        buckets_to_sync(upload_prefix).inject(0) do |sum, bucket|
-          sum += objects_from_bucket(bucket, upload_prefix).size
-        end
-      end
-    
       def files_to_sync(upload_prefix="")
         $LOGGER.info("Getting files to sync [#{self}]")
         
@@ -109,6 +101,8 @@ module Cloudsync
       end
       
       def objects_from_bucket(bucket, upload_prefix="")
+        $LOGGER.debug("Getting files from #{bucket}")
+        
         prefix_parts = upload_prefix.split("/")
         prefix_parts.shift
         prefix = prefix_parts.join("/")
@@ -125,7 +119,6 @@ module Cloudsync
       end
     
       def get_obj_from_store(file)
-        $LOGGER.debug("gofs, buck: #{file.bucket}. upload path: #{file.upload_path}")
         if bucket = @store.bucket(file.bucket)
           key = bucket.key(file.upload_path)
           return key if key.exists?
