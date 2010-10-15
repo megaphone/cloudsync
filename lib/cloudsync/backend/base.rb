@@ -34,7 +34,7 @@ module Cloudsync
       
       # needs_update?
       def needs_update?(file)
-        $LOGGER.debug("Checking if #{file} needs update")
+        $LOGGER.debug("Checking if file needs update: #{file}")
       
         local_backend_file = get_file_from_store(file)
 

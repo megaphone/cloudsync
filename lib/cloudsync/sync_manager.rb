@@ -77,12 +77,12 @@ module Cloudsync
       index                = 1
 
       to_backend.files_to_sync(from_backend.upload_prefix) do |file|
-        $LOGGER.debug("Checking if file #{file} exists on [#{from_backend}]")
+        $LOGGER.debug("Checking if file exists on backend: #{file} [#{from_backend}]")
         if found_file = from_backend.get_file_from_store(file)
-          $LOGGER.debug("Keeping file #{file} because it was found on #{from_backend}.")
+          $LOGGER.debug("Keeping file because it was found on backend: #{file} [#{from_backend}].")
           file_stats[:skipped] << file
         else
-          $LOGGER.debug("Removing #{file} because it doesn't exist on #{from_backend}.")
+          $LOGGER.debug("Removing file because it doesn't exist on backend: #{file} [#{from_backend}].")
           file_stats[:removed] << file
           
           to_backend.delete(file)
