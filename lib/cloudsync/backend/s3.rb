@@ -67,16 +67,34 @@ module Cloudsync
       rescue RightAws::AwsError => e
         $LOGGER.error("Caught error: #{e} trying to delete #{file}")
       end
+      
+      def count_files_to_sync(upload_prefix="")
+        $LOGGER.debug("Counting files to sync [#{self}]")
+        
+        buckets_to_sync(upload_prefix).inject(0) do |sum, bucket|
+          sum += objects_from_bucket(bucket, upload_prefix).size
+        end
+      end
     
       def files_to_sync(upload_prefix="")
         $LOGGER.info("Getting files to sync [#{self}]")
         
         buckets_to_sync(upload_prefix).inject([]) do |files, bucket|
           objects_from_bucket(bucket, upload_prefix).collect do |key|
-            files << Cloudsync::File.from_s3_obj(key, self.to_s)
+            file = Cloudsync::File.from_s3_obj(key, self.to_s)
+            if block_given?
+              yield file
+            else
+              files << file
+            end
           end
           files
         end
+      end
+
+      # Convenience to grab a single file
+      def get_file_from_store(file)
+        Cloudsync::File.from_s3_obj( get_obj_from_store(file), self.to_s )
       end
 
       private
@@ -100,11 +118,6 @@ module Cloudsync
         else
           bucket.keys
         end
-      end
-    
-      # Convenience to grab a single file
-      def get_file_from_store(file)
-        Cloudsync::File.from_s3_obj( get_obj_from_store(file), self.to_s )
       end
     
       def get_or_create_obj_from_store(file)

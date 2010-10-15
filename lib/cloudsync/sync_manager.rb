@@ -74,11 +74,11 @@ module Cloudsync
       
       $LOGGER.info("[SM]: Prune from #{from_backend} to #{to_backend} started at #{prune_start = Time.now}. Dry-run? #{!!dry_run?}")
       
-      to_backend_files     = to_backend.files_to_sync(from_backend.upload_prefix)
-      total_files          = to_backend_files.size
+      total_files          = to_backend.count_files_to_sync(from_backend.upload_prefix)
       last_decile_complete = 0
-      
-      to_backend_files.each_with_index do |file, index|
+      index                = 0
+
+      to_backend.files_to_sync(from_backend.upload_prefix) do |file|
         $LOGGER.debug("Checking if file #{file} exists on [#{from_backend}]")
         if found_file = from_backend.get_file_from_store(file)
           $LOGGER.debug("Keeping file #{file} because it was found on #{from_backend}.")
@@ -94,6 +94,8 @@ module Cloudsync
           last_decile_complete = decile_complete(index, total_files)
           $LOGGER.info("[SM]: Prune: Completed #{index + 1} files (skipped: #{file_stats[:skipped].size}, removed: #{file_stats[:removed].size}). #{last_decile_complete * 10}% complete")
         end
+        
+        index += 1
       end
       
       $LOGGER.info(["[SM]: Prune from #{from_backend} to #{to_backend} finished at #{Time.now}, took #{Time.now - prune_start}s.",
@@ -106,11 +108,11 @@ module Cloudsync
       file_stats = {:copied => [], :skipped => []}
       $LOGGER.info("[SM]: Sync from #{from_backend} to #{to_backend} started at #{sync_start = Time.now}. Mode: #{mode}. Dry-run? #{!!dry_run?}")
 
-      from_backend_files   = from_backend.files_to_sync(to_backend.upload_prefix)
-      total_files          = from_backend_files.size
+      total_files          = from_backend_files.count_files_to_sync(to_backend.upload_prefix)
       last_decile_complete = 0
-      
-      from_backend_files.each_with_index do |file, index|
+      index = 0
+
+      from_backend.files_to_sync(to_backend.upload_prefix) do |file|
         if (mode == :sync_all || to_backend.needs_update?(file))
           file_stats[:copied] << file
           from_backend.copy(file, to_backend)
@@ -123,6 +125,8 @@ module Cloudsync
           last_decile_complete = decile_complete(index, total_files)
           $LOGGER.info("[SM]: Sync from #{from_backend} to #{to_backend}: Completed #{index + 1} files (skipped: #{file_stats[:skipped].size}, copied: #{file_stats[:copied].size}). #{last_decile_complete * 10}% complete")
         end
+        
+        index += 1
       end
       
       $LOGGER.info(["[SM]: Sync from #{from_backend} to #{to_backend} finished at #{Time.now}, took #{Time.now - sync_start}s.",

@@ -42,6 +42,18 @@ module Cloudsync
         $LOGGER.debug("Finished putting #{file} to #{self} (#{Time.now - start_time}s)")
       end
     
+      def count_files_to_sync(upload_prefix)
+        $LOGGER.debug("Counting files to sync [#{self}]")
+
+        containers_to_sync(upload_prefix).inject(0) do |sum, container|
+          $LOGGER.debug("#{container} #{cstart = Time.now}")
+          container = get_or_create_container(container)
+          sum += objects_from_container(container, upload_prefix).size
+          $LOGGER.debug("#{container} #{Time.now - cstart}")
+          sum
+        end
+      end
+    
       def files_to_sync(upload_prefix={})
         $LOGGER.info("Getting files to sync [#{self}]")
 
@@ -49,7 +61,13 @@ module Cloudsync
           container = get_or_create_container(container)
           objects_from_container(container, upload_prefix).each do |path, hash|
             next if hash[:content_type] == "application/directory"
-            files << Cloudsync::File.from_cf_info(container, path, hash, self.to_s)
+
+            file = Cloudsync::File.from_cf_info(container, path, hash, self.to_s)
+            if block_given?
+              yield file
+            else
+              files << file
+            end
           end
           files
         end
@@ -75,6 +93,10 @@ module Cloudsync
         $LOGGER.error("Failed to delete file #{file}")
       end
     
+      def get_file_from_store(file)
+        Cloudsync::File.from_cf_obj( get_obj_from_store(file), self.to_s )
+      end
+
       private
       
       def get_or_create_container(container_name)
@@ -104,15 +126,12 @@ module Cloudsync
         end
         objects
       end
+      
 
       def get_obj_from_store(file)
         @store.container(file.bucket).object(file.upload_path)
       rescue NoSuchContainerException, NoSuchObjectException => e
         nil
-      end
-    
-      def get_file_from_store(file)
-        Cloudsync::File.from_cf_obj( get_obj_from_store(file), self.to_s )
       end
     
       def get_or_create_obj_from_store(file)

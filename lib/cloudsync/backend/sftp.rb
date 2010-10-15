@@ -63,19 +63,35 @@ module Cloudsync::Backend
       end
     end
     
-    def files_to_sync(upload_prefix={})
-      $LOGGER.info("Getting files to sync [#{self}]")
-      files = []
+    def count_files_to_sync(upload_prefix="")
+      $LOGGER.debug("Counting files to sync [#{self}]")
+      count = 0
       Net::SSH.start(@host, @username, :password => @password) do |ssh|
         ssh.sftp.connect do |sftp|
           filepaths = sftp.dir.glob(@download_prefix, "**/**").collect {|entry| entry.name}
         
           files = filepaths.collect do |filepath|
             attrs = sftp.stat!(local_filepath_from_filepath(filepath))
+            count += 1 if attrs.file?
+          end
+        end
+      end
+      count
+    end
+    
+    def files_to_sync(upload_prefix="")
+      $LOGGER.info("Getting files to sync [#{self}]")
+      files = []
+      Net::SSH.start(@host, @username, :password => @password) do |ssh|
+        ssh.sftp.connect do |sftp|
+          filepaths = sftp.dir.glob(@download_prefix, "**/**").collect {|entry| entry.name}
+        
+          filepaths.each do |filepath|
+            attrs = sftp.stat!(local_filepath_from_filepath(filepath))
             next unless attrs.file?
 
             e_tag = ssh.exec!(md5sum_cmd(filepath)).split(" ").first
-            Cloudsync::File.new \
+            file = Cloudsync::File.new \
               :path            => filepath,
               :upload_prefix   => @upload_prefix,
               :download_prefix => @download_prefix,
@@ -84,29 +100,16 @@ module Cloudsync::Backend
               :e_tag           => e_tag,
               :backend         => self.to_s,
               :backend_type    => Cloudsync::Backend::Sftp
-          end.compact
+            
+            if block_given?
+              yield file
+            else
+              files << file
+            end
+          end
         end
       end
       files
-    end
-    
-    # def absolute_path(path)
-    #   @download_prefix + "/" + path
-    # end
-    
-    private
-    
-    def md5sum_cmd(filepath)
-      Escape.shell_command(["md5sum","#{local_filepath_from_filepath(filepath)}"])
-    end
-    
-    def local_filepath_from_filepath(filepath)
-      stripped_path = filepath.sub(/^#{@upload_prefix}\/?/,"")
-      if @download_prefix
-        "#{@download_prefix}/#{stripped_path}"
-      else
-        stripped_path
-      end
     end
     
     # get_file_from_store
@@ -136,6 +139,21 @@ module Cloudsync::Backend
         end
       end
       sftp_file
+    end
+    
+    private
+    
+    def md5sum_cmd(filepath)
+      Escape.shell_command(["md5sum","#{local_filepath_from_filepath(filepath)}"])
+    end
+    
+    def local_filepath_from_filepath(filepath)
+      stripped_path = filepath.sub(/^#{@upload_prefix}\/?/,"")
+      if @download_prefix
+        "#{@download_prefix}/#{stripped_path}"
+      else
+        stripped_path
+      end
     end
   end 
 end
