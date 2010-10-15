@@ -69,25 +69,20 @@ module Cloudsync
         raise NotImplementedError
       end
     
-      # all_files
-      def all_files
+      def files_to_sync(upload_prefix={})
         raise NotImplementedError
       end
       
-      def files_to_sync(upload_prefix={})
-        all_files
+      # get_file_from_store
+      def get_file_from_store(file)
+        raise NotImplementedError
       end
-      
+
       private
       
       def dry_run?
         return false unless @sync_manager
         @sync_manager.dry_run?
-      end
-
-      # get_file_from_store
-      def get_file_from_store(file)
-        raise NotImplementedError
       end
     end
   end
