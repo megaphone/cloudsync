@@ -3,6 +3,10 @@ require 'tempfile'
 module Cloudsync
   module Backend
     class Base
+      OBJECT_LIMIT    = 250
+      CONTAINER_LIMIT = 250
+      BUCKET_LIMIT    = CONTAINER_LIMIT
+      
       attr_accessor :store, :sync_manager, :name, :upload_prefix
       
       def initialize(opts = {})
@@ -79,6 +83,13 @@ module Cloudsync
       end
 
       private
+      
+      def remove_container_name(string)
+        parts = string.split("/")
+        parts.shift
+        parts.join("/")
+      end
+      alias :remove_bucket_name :remove_container_name
       
       def dry_run?
         return false unless @sync_manager
