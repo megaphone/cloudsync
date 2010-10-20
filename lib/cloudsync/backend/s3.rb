@@ -111,12 +111,10 @@ module Cloudsync
         params['prefix'] = prefix if !prefix.nil?
         
         loop do
-          $LOGGER.debug(params.inspect)
           keys = bucket.keys(params)
           break if keys.empty?
           
           keys.each do |key|
-            $LOGGER.debug(key.name)
             yield key
           end
 

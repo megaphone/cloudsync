@@ -113,10 +113,6 @@ module Cloudsync
         end
       end
       
-      # cf = Cloudsync::Backend::CloudFiles.new( YAML::load_file("cloudsync.yml")[:cloudfiles]); $LOGGER = Logger.new(STDOUT); count = 0; cf.files_to_sync {|p,h| count += 1 }; puts count
-      # cf = Cloudsync::Backend::CloudFiles.new( YAML::load_file("cloudsync.yml")[:cloudfiles]); $LOGGER = Logger.new(STDOUT); count = 0; paths = []; cf.files_to_sync("mpsounds-adobe.max.trivia") {|f| count += 1; paths << f.path}; puts count
-      
-      
       # prefix_path must not include the container name at the beginning of the string
       def objects_from_container(container, prefix_path="", &block)
         $LOGGER.debug("Getting files from #{container.name} (prefix: #{prefix_path})")
@@ -126,20 +122,19 @@ module Cloudsync
           params          = {:limit => OBJECT_LIMIT, :marker => last_marker}
           params[:path]   = prefix_path if !prefix_path.empty?
           
-          $LOGGER.debug("OFC #{container.name} (#{prefix_path}) loop: #{params.inspect}")
+          # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) loop: #{params.inspect}")
           
           objects_details = container.objects_detail(params)
 
-          $LOGGER.debug("OFC #{container.name} (#{prefix_path}) got #{objects_details.size}. #{objects_details.class}")
-          $LOGGER.debug("-"*50)
+          # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) got #{objects_details.size}. #{objects_details.class}")
           
           break if objects_details.empty?
           
           objects_details.sort.each do |path, hash|
             if hash[:content_type] == "application/directory" && !prefix_path.empty?
-              $LOGGER.debug("OFC #{container.name} (#{prefix_path}) recursing into #{path}")
+              # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) recursing into #{path}")
               objects_from_container(container, path, &block)
-              $LOGGER.debug("OFC #{container.name} (#{prefix_path}) done recursing into #{path}")
+              # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) done recursing into #{path}")
             end
             
             last_marker = path
