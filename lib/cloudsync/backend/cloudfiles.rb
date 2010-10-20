@@ -42,12 +42,13 @@ module Cloudsync
         $LOGGER.debug("Finished putting #{file} to #{self} (#{Time.now - start_time}s)")
       end
     
-      def files_to_sync(upload_prefix={})
+      def files_to_sync(upload_prefix="")
         $LOGGER.info("Getting files to sync [#{self}]")
-
-        containers_to_sync(upload_prefix).inject([]) do |files, container|
+        
+        files = []
+        containers_to_sync(upload_prefix) do |container|
           container = get_or_create_container(container)
-          objects_from_container(container, upload_prefix).each do |path, hash|
+          objects_from_container(container, remove_container_name(upload_prefix)) do |path, hash|
             next if hash[:content_type] == "application/directory"
 
             file = Cloudsync::File.from_cf_info(container, path, hash, self.to_s)
@@ -96,27 +97,56 @@ module Cloudsync
       end
 
       def containers_to_sync(upload_prefix)
-        upload_prefix[:bucket] ? [upload_prefix[:bucket]] : @store.containers
-      end
-      
-      def objects_from_container(container, upload_prefix)
-        $LOGGER.debug("Getting files from #{container.name}")
-        
-        objects = []
-        if upload_prefix[:prefix]
-          container.objects_detail(:path => upload_prefix[:prefix]).collect do |path, hash|
-            if hash[:content_type] == "application/directory"
-              objects += objects_from_container(container, :prefix => path) 
-            else
-              objects << [path, hash]
+        container_name = upload_prefix.split("/").first
+        if container_name
+          yield container_name
+        else
+          last_marker = nil
+          loop do
+            containers = @store.containers(CONTAINER_LIMIT, last_marker)
+            break if containers.empty?
+            containers.each do |container| 
+              last_marker = container
+              yield container
             end
           end
-        else
-          objects = container.objects_detail
         end
-        objects
       end
       
+      # cf = Cloudsync::Backend::CloudFiles.new( YAML::load_file("cloudsync.yml")[:cloudfiles]); $LOGGER = Logger.new(STDOUT); count = 0; cf.files_to_sync {|p,h| count += 1 }; puts count
+      # cf = Cloudsync::Backend::CloudFiles.new( YAML::load_file("cloudsync.yml")[:cloudfiles]); $LOGGER = Logger.new(STDOUT); count = 0; paths = []; cf.files_to_sync("mpsounds-adobe.max.trivia") {|f| count += 1; paths << f.path}; puts count
+      
+      
+      # prefix_path must not include the container name at the beginning of the string
+      def objects_from_container(container, prefix_path="", &block)
+        $LOGGER.debug("Getting files from #{container.name} (prefix: #{prefix_path})")
+
+        last_marker     = nil
+        loop do
+          params          = {:limit => OBJECT_LIMIT, :marker => last_marker}
+          params[:path]   = prefix_path if !prefix_path.empty?
+          
+          $LOGGER.debug("OFC #{container.name} (#{prefix_path}) loop: #{params.inspect}")
+          
+          objects_details = container.objects_detail(params)
+
+          $LOGGER.debug("OFC #{container.name} (#{prefix_path}) got #{objects_details.size}. #{objects_details.class}")
+          $LOGGER.debug("-"*50)
+          
+          break if objects_details.empty?
+          
+          objects_details.sort.each do |path, hash|
+            if hash[:content_type] == "application/directory" && !prefix_path.empty?
+              $LOGGER.debug("OFC #{container.name} (#{prefix_path}) recursing into #{path}")
+              objects_from_container(container, path, &block)
+              $LOGGER.debug("OFC #{container.name} (#{prefix_path}) done recursing into #{path}")
+            end
+            
+            last_marker = path
+            yield path, hash
+          end
+        end
+      end
 
       def get_obj_from_store(file)
         @store.container(file.bucket).object(file.upload_path)

@@ -72,7 +72,7 @@ module Cloudsync
         $LOGGER.info("Getting files to sync [#{self}]")
         
         buckets_to_sync(upload_prefix).inject([]) do |files, bucket|
-          objects_from_bucket(bucket, upload_prefix).collect do |key|
+          objects_from_bucket(bucket, upload_prefix) do |key|
             file = Cloudsync::File.from_s3_obj(key, self.to_s)
             if block_given?
               yield file
@@ -90,6 +90,9 @@ module Cloudsync
       end
 
       private
+
+      # cf = Cloudsync::Backend::S3.new( YAML::load_file("cloudsync.yml")[:s3]); $LOGGER = Logger.new(STDOUT); count = 0; cf.files_to_sync {|p,h| count += 1 }; puts count
+
     
       def buckets_to_sync(upload_prefix="")
         bucket_name = upload_prefix.split("/").first
@@ -103,14 +106,21 @@ module Cloudsync
       def objects_from_bucket(bucket, upload_prefix="")
         $LOGGER.debug("Getting files from #{bucket}")
         
-        prefix_parts = upload_prefix.split("/")
-        prefix_parts.shift
-        prefix = prefix_parts.join("/")
+        prefix = remove_bucket_name(upload_prefix)
+        params = {'marker' => "", 'max-keys' => OBJECT_LIMIT}
+        params['prefix'] = prefix if !prefix.nil?
         
-        if !prefix.empty?
-          bucket.keys(:prefix => prefix)
-        else
-          bucket.keys
+        loop do
+          $LOGGER.debug(params.inspect)
+          keys = bucket.keys(params)
+          break if keys.empty?
+          
+          keys.each do |key|
+            $LOGGER.debug(key.name)
+            yield key
+          end
+
+          params['marker'] = keys.last.name
         end
       end
     
