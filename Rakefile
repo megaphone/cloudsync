@@ -11,7 +11,7 @@ begin
     gem.homepage = "http://github.com/megaphone/cloudsync"
     gem.authors = ["Cory Forsyth"]
     gem.add_dependency "right_aws", "~> 2.0.0"
-    gem.add_dependency "cloudfiles", "~> 1.4.8"
+    gem.add_dependency "cloudfiles", "~> 1.4.9"
     gem.add_dependency "commander", "~> 4.0.3"
     gem.add_dependency "net-ssh", "~> 2.0.19"
     gem.add_dependency "net-sftp", "~> 2.0.4"
