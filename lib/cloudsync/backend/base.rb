@@ -73,7 +73,7 @@ module Cloudsync
         raise NotImplementedError
       end
     
-      def files_to_sync(upload_prefix={})
+      def files_to_sync(upload_prefix="")
         raise NotImplementedError
       end
       

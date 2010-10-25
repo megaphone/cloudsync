@@ -73,13 +73,13 @@ module Cloudsync
         if delete_container_if_empty
           container.refresh
           if container.empty?
-            $LOGGER.debug("Deleting empty container '#{container.name}'")
+            $LOGGER.info("Deleting empty container '#{container.name}'")
             @store.delete_container(container.name)
           end
         end
       
       rescue NoSuchContainerException, NoSuchObjectException => e
-        $LOGGER.error("Failed to delete file #{file}")
+        $LOGGER.error("Failed to delete file #{file}, container #{container.name}")
       end
     
       def get_file_from_store(file)
@@ -122,19 +122,19 @@ module Cloudsync
           params          = {:limit => OBJECT_LIMIT, :marker => last_marker}
           params[:path]   = prefix_path if !prefix_path.empty?
           
-          # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) loop: #{params.inspect}")
+          $LOGGER.debug("OFC #{container.name} (#{prefix_path}) loop: #{params.inspect}")
           
           objects_details = container.objects_detail(params)
 
-          # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) got #{objects_details.size}. #{objects_details.class}")
+          $LOGGER.debug("OFC #{container.name} (#{prefix_path}) got #{objects_details.size}. #{objects_details.class}")
           
           break if objects_details.empty?
           
           objects_details.sort.each do |path, hash|
             if hash[:content_type] == "application/directory" && !prefix_path.empty?
-              # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) recursing into #{path}")
+              $LOGGER.debug("OFC #{container.name} (#{prefix_path}) recursing into #{path}")
               objects_from_container(container, path, &block)
-              # $LOGGER.debug("OFC #{container.name} (#{prefix_path}) done recursing into #{path}")
+              $LOGGER.debug("OFC #{container.name} (#{prefix_path}) done recursing into #{path}")
             end
             
             last_marker = path

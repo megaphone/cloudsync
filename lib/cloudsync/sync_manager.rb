@@ -92,6 +92,15 @@ module Cloudsync
           $LOGGER.info("[SM]: Prune: Completed #{index} files (skipped: #{file_stats[:skipped].size}, removed: #{file_stats[:removed].size}).")
         end
         
+        if index % Cloudsync::Backend::Base::OBJECT_LIMIT == 0
+          $LOGGER.debug("GC starting")
+          GC.start
+          
+          memory_usage = `ps -o rss= -p #{$$}`.to_i
+          ocount = 0; ObjectSpace.each_object {|o| ocount += 1}
+          $LOGGER.debug "memory: #{memory_usage}, objects: #{ocount}"
+        end
+        
         index += 1
       end
       
